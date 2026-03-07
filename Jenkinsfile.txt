@@ -3,6 +3,12 @@ pipeline {
 
     stages {
 
+	     stage('Checkout Code') {
+            steps {
+                git 'https://github.com/virpari/performance-monitoring.git'
+            }
+        }
+
         stage('Install Python Libraries') {
             steps {
                 bat 'pip install pandas numpy matplotlib'
@@ -21,17 +27,10 @@ pipeline {
             }
         }
 
-    }
-
-    post {
-
-        always {
-
-            archiveArtifacts artifacts: '*.png'
-            archiveArtifacts artifacts: '*.html'
-            archiveArtifacts artifacts: '*.csv'
-
+        stage('Archive Reports') {
+            steps {
+                archiveArtifacts artifacts: '*.html, *.png, *.csv', fingerprint: true
+            }
         }
-
     }
 }
