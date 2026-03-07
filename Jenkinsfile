@@ -9,11 +9,12 @@ pipeline {
             }
         }
 
-        stage('Install Python Libraries') {
-            steps {
-                bat 'pip install pandas numpy matplotlib'
-            }
-        }
+
+		stage('Install Python Libraries') {
+    		steps {
+        		bat 'python -m pip install pandas numpy matplotlib'
+    		}
+		}
 
         stage('Run JMeter Test') {
             steps {
