@@ -3,9 +3,9 @@ pipeline {
 
     stages {
 
-	     stage('Checkout Code') {
+	    stage('Checkout Code') {
             steps {
-                git 'https://github.com/virpari/performance-monitoring.git'
+                git branch: 'main', url: 'https://github.com/virpari/performance-monitoring.git'
             }
         }
 
