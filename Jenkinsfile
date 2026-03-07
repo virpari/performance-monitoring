@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        JMETER_HOME = "C:\\apache-jmeter-5.6.3"
+        JMETER_HOME = "D:\\apache-jmeter-5.6.3"
     }
 
     stages {
