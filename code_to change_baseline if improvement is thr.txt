@@ -1,0 +1,104 @@
+from analyze_jmeter import calculate_per_sampler
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import sys
+import os
+import shutil
+
+baseline_file = sys.argv[1]
+current_file = sys.argv[2]
+
+
+# First run → create baseline
+if not os.path.exists(baseline_file):
+    print("Baseline results not found.")
+    print("Saving current results as baseline.")
+    shutil.copy(current_file, baseline_file)
+    sys.exit(0)
+
+
+# Run analysis
+baseline = calculate_per_sampler(baseline_file)
+current = calculate_per_sampler(current_file)
+
+
+comparison = pd.merge(
+    baseline[['label', 'P99']],
+    current[['label', 'P99']],
+    on='label',
+    suffixes=('_baseline', '_current')
+)
+
+
+comparison['Degradation_%'] = (
+    (comparison['P99_current'] - comparison['P99_baseline'])
+    / comparison['P99_baseline']
+) * 100
+
+comparison = comparison.round(2)
+
+comparison = comparison.sort_values(by="Degradation_%", ascending=False)
+
+print("\n===== Performance Comparison (P99) =====\n")
+print(comparison)
+
+
+# APIs with regression
+problem_apis = comparison[comparison['Degradation_%'] > 10]
+
+print("\n⚠ APIs with >10% degradation:\n")
+
+for _, row in problem_apis.iterrows():
+    print(f"{row['label']} shows {row['Degradation_%']}% degradation")
+
+
+# Save HTML report
+comparison.to_html("performance_report.html", index=False)
+
+
+# Graph
+labels = comparison['label']
+x = np.arange(len(labels))
+width = 0.35
+
+plt.figure()
+
+plt.bar(x - width/2, comparison['P99_baseline'], width, label='Baseline')
+plt.bar(x + width/2, comparison['P99_current'], width, label='Current')
+
+plt.xlabel("API Name")
+plt.ylabel("P99 Response Time (ms)")
+plt.title("Performance Comparison")
+plt.xticks(x, labels, rotation=45)
+plt.legend()
+
+plt.tight_layout()
+
+plt.savefig("p99_comparison.png")
+
+
+# Save performance history
+history_file = "performance_history.csv"
+
+if os.path.exists(history_file):
+    comparison.to_csv(history_file, mode='a', header=False, index=False)
+else:
+    comparison.to_csv(history_file, index=False)
+
+
+# Baseline update logic
+avg_change = comparison['Degradation_%'].mean()
+
+if avg_change < -5:
+    print("\nPerformance improved significantly. Updating baseline.")
+    shutil.copy(current_file, baseline_file)
+
+
+# Jenkins result
+if len(problem_apis) > 0:
+    print("\nPerformance regression detected")
+    sys.exit(1)
+else:
+    print("\nPerformance OK")
+    sys.exit(0)
