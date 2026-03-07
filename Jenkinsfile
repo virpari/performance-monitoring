@@ -1,24 +1,34 @@
 pipeline {
     agent any
 
+    environment {
+        JMETER_HOME = "C:\\apache-jmeter-5.6.3"
+    }
+
     stages {
 
-	    stage('Checkout Code') {
+        stage('Checkout Code') {
             steps {
                 git branch: 'main', url: 'https://github.com/virpari/performance-monitoring.git'
             }
         }
 
+        stage('Verify Python') {
+            steps {
+                bat 'python --version'
+            }
+        }
 
-		stage('Install Python Libraries') {
-    		steps {
-        		bat 'python -m pip install pandas numpy matplotlib'
-    		}
-		}
+        stage('Install Dependencies') {
+            steps {
+                bat 'python -m pip install --upgrade pip'
+                bat 'python -m pip install -r requirements.txt'
+            }
+        }
 
         stage('Run JMeter Test') {
             steps {
-                bat 'jmeter -n -t Test_Executions.jmx -l current_results.jtl'
+                bat "\"%JMETER_HOME%\\bin\\jmeter.bat\" -n -t Test_Executions.jmx -l current_results.jtl"
             }
         }
 
@@ -30,8 +40,23 @@ pipeline {
 
         stage('Archive Reports') {
             steps {
-                archiveArtifacts artifacts: '*.html, *.png, *.csv', fingerprint: true
+                archiveArtifacts artifacts: '*.html, *.png, *.csv, *.jtl', fingerprint: true
             }
+        }
+    }
+
+    post {
+
+        success {
+            echo 'Performance Test Passed ✅'
+        }
+
+        failure {
+            echo 'Performance Regression Detected ❌'
+        }
+
+        always {
+            cleanWs()
         }
     }
 }
