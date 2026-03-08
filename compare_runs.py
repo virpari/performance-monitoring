@@ -97,6 +97,10 @@ else:
     comparison.to_csv(history_file, index=False)
 
 
+# NEW: Export trend data for Jenkins performance graph
+comparison[['label','P99_102']].to_csv("p99_trend.csv", index=False)
+
+
 # Jenkins build status
 if len(problem_apis) > 0:
     print("\nPerformance regression detected")
