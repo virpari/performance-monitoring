@@ -38,6 +38,13 @@ pipeline {
             }
         }
 
+        // ✅ ADD THIS STAGE
+        stage('Update Baseline') {
+            steps {
+                bat 'copy current_results.jtl baseline_results.jtl /Y'
+            }
+        }
+
         stage('Archive Reports') {
             steps {
                 archiveArtifacts artifacts: '*.html, *.png, *.csv, *.jtl', fingerprint: true
