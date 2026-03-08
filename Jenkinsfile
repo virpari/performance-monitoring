@@ -34,16 +34,32 @@ pipeline {
 
         stage('Compare Performance') {
             steps {
-                bat 'python compare_runs.py baseline_results.jtl current_results.jtl'
+                bat 'if exist baseline_results.jtl (python compare_runs.py baseline_results.jtl current_results.jtl)'
             }
         }
 
-        // ✅ ADD THIS STAGE
         stage('Update Baseline') {
             steps {
                 bat 'copy current_results.jtl baseline_results.jtl /Y'
             }
         }
+
+        stage('Publish HTML Report') {
+            steps {
+                publishHTML([
+                    reportDir: '.',
+                    reportFiles: 'performance_report.html',
+                    reportName: 'Performance Report'
+                ])
+            }
+        }
+        stage('Performance Trend Graph') {
+    steps {
+        plot csvFileName: 'p99_trend.csv',
+             group: 'Performance Trends',
+             title: 'P99 Response Time Trend'
+                }
+            }
 
         stage('Archive Reports') {
             steps {
@@ -62,8 +78,5 @@ pipeline {
             echo 'Performance Regression Detected ❌'
         }
 
-        always {
-            cleanWs()
-        }
     }
 }
