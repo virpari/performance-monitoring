@@ -45,21 +45,26 @@ pipeline {
         }
 
         stage('Publish HTML Report') {
-            steps {
-                publishHTML([
-                    reportDir: '.',
-                    reportFiles: 'performance_report.html',
-                    reportName: 'Performance Report'
-                ])
-            }
-        }
-        stage('Performance Trend Graph') {
+    steps {
+        publishHTML(target: [
+            allowMissing: false,
+            alwaysLinkToLastBuild: true,
+            keepAll: true,
+            reportDir: '.',
+            reportFiles: 'performance_report.html',
+            reportName: 'Performance Report'
+        ])
+    }
+}
+
+stage('Performance Trend Graph') {
     steps {
         plot csvFileName: 'p99_trend.csv',
              group: 'Performance Trends',
-             title: 'P99 Response Time Trend'
-                }
-            }
+             title: 'P99 Response Time Trend',
+             style: 'line'
+    }
+}
 
         stage('Archive Reports') {
             steps {
