@@ -9,7 +9,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 import sys
 import os
-import shutil
 
 
 # Read input files
@@ -20,8 +19,7 @@ build2_file = sys.argv[2]   # current run
 # If baseline does not exist (first Jenkins run)
 if not os.path.exists(build1_file):
     print("Baseline results not found.")
-    print("Saving current results as baseline for next run.")
-    shutil.copy(build2_file, build1_file)
+    print("Skipping comparison for first run.")
     sys.exit(0)
 
 
@@ -75,12 +73,12 @@ width = 0.35
 
 plt.figure()
 
-plt.bar(x - width/2, comparison['P99_101'], width, label='Test 1')
-plt.bar(x + width/2, comparison['P99_102'], width, label='Test 2')
+plt.bar(x - width/2, comparison['P99_101'], width, label='Baseline')
+plt.bar(x + width/2, comparison['P99_102'], width, label='Current')
 
 plt.xlabel("API Name")
 plt.ylabel("P99 Response Time (ms)")
-plt.title("P99 Comparison: Test1 vs Test2")
+plt.title("P99 Comparison: Baseline vs Current")
 plt.xticks(x, labels, rotation=45)
 plt.legend()
 
