@@ -57,7 +57,7 @@ print(comparison)
 # Detect APIs with >10% degradation
 problem_apis = comparison[comparison['Degradation_%'] > 10]
 
-print("\n⚠ APIs with >10% degradation:\n")
+print("\nAPIs with >10% degradation:\n")
 for _, row in problem_apis.iterrows():
     print(f"{row['label']} shows {row['Degradation_%']}% degradation in P99")
 
