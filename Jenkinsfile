@@ -32,11 +32,13 @@ pipeline {
             }
         }
 
-        stage('Compare Performance') {
-            steps {
-                bat 'if exist baseline_results.jtl (python compare_runs.py baseline_results.jtl current_results.jtl)'
-            }
+        stage('Compare Results') {
+    steps {
+        catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE') {
+            bat 'python compare_runs.py baseline_results.jtl current_results.jtl'
         }
+    }
+}
 
         stage('Update Baseline') {
             steps {
